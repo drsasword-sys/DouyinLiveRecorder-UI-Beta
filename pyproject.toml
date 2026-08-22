@@ -1,0 +1,25 @@
+[project]
+name = "DouyinLiveRecorder-UI-Beta"
+version = "0.1.0b1"
+description = "Local browser UI and portable Windows beta derived from DouyinLiveRecorder"
+readme = "README_BETA.vi.md"
+authors = [{name = "Hmily"}]
+maintainers = [{name = "drsasword-sys"}]
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.31.0",
+    "loguru>=0.7.3",
+    "pycryptodome>=3.20.0",
+    "distro>=1.9.0",
+    "tqdm>=4.67.1",
+    "httpx[http2]>=0.28.1",
+    "PyExecJS>=1.5.1"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/drsasword-sys/DouyinLiveRecorder-UI-Beta"
+"Documentation" = "https://github.com/drsasword-sys/DouyinLiveRecorder-UI-Beta/blob/main/README_BETA.vi.md"
+"Repository" = "https://github.com/drsasword-sys/DouyinLiveRecorder-UI-Beta"
+"Issues" = "https://github.com/drsasword-sys/DouyinLiveRecorder-UI-Beta/issues"
+"Upstream" = "https://github.com/ihmily/DouyinLiveRecorder"
