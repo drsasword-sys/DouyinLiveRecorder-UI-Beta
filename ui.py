@@ -36,7 +36,7 @@ except ValueError:
     PORT = 8765
 if not 1024 <= PORT <= 65535:
     PORT = 8765
-APP_VERSION = "0.1.0-beta.2"
+APP_VERSION = "0.1.0-beta.3"
 ALLOWED_HOSTS = {
     "live.douyin.com",
     "v.douyin.com",
@@ -47,6 +47,12 @@ ALLOWED_HOSTS = {
 CONFIG_LOCK = threading.Lock()
 recorder_process: subprocess.Popen | None = None
 recorder_log = None
+
+
+class LocalHTTPServer(ThreadingHTTPServer):
+    """Prevent multiple recorder UIs from sharing the same Windows port."""
+
+    allow_reuse_address = False
 
 
 def ensure_runtime_files() -> None:
@@ -355,7 +361,7 @@ if __name__ == "__main__":
     else:
         ensure_runtime_files()
         try:
-            server = ThreadingHTTPServer((HOST, PORT), Handler)
+            server = LocalHTTPServer((HOST, PORT), Handler)
         except OSError:
             webbrowser.open(f"http://{HOST}:{PORT}")
             raise SystemExit(0)

@@ -4,6 +4,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
+import ui
+
 from ui import (
     add_url,
     ensure_console_streams,
@@ -94,6 +96,9 @@ class ValidateUrlTests(unittest.TestCase):
             prepare_recorder_runtime()
         ensure_files.assert_called_once_with()
         ensure_streams.assert_called_once_with("recorder-console.log")
+
+    def test_local_server_disables_address_reuse(self):
+        self.assertFalse(ui.LocalHTTPServer.allow_reuse_address)
 
 
 if __name__ == "__main__":

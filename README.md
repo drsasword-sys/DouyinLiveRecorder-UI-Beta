@@ -20,7 +20,7 @@ Tài liệu nguyên bản của upstream được giữ tại [README_UPSTREAM.m
 
 ## Trạng thái
 
-Phiên bản hiện tại: `0.1.0-beta.2` cho Windows 10/11 x64. EXE chưa ký số nên
+Phiên bản hiện tại: `0.1.0-beta.3` cho Windows 10/11 x64. EXE chưa ký số nên
 SmartScreen có thể cảnh báo. Xem [SECURITY.md](SECURITY.md),
 [UPSTREAM.md](UPSTREAM.md) và [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 

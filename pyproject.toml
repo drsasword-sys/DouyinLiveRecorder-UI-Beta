@@ -1,6 +1,6 @@
 [project]
 name = "DouyinLiveRecorder-UI-Beta"
-version = "0.1.0b2"
+version = "0.1.0b3"
 description = "Local browser UI and portable Windows beta derived from DouyinLiveRecorder"
 readme = "README_BETA.vi.md"
 authors = [{name = "Hmily"}]

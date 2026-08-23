@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-beta.3 - 2026-08-23
+
+### Fixed
+
+- Disable address reuse for the local HTTP server so repeated launches cannot
+  bind multiple recorder UIs to port 8765 on Windows.
+
 ## 0.1.0-beta.2 - 2026-08-23
 
 ### Fixed
