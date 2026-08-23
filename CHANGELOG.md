@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.0-beta.2 - 2026-08-23
+
+### Fixed
+
+- Reconfigure inherited Windows stdout/stderr streams to UTF-8 before importing
+  the recorder, preventing `UnicodeEncodeError: charmap` in the packaged EXE.
+- Add a regression test covering non-null `cp1252` console streams.
+- Prepare runtime config in direct recorder-child mode.
+- Make release builds fail fast, version-isolated and resilient to transient
+  archive file locks.
+
 ## 0.1.0-beta.1 - 2026-08-22
 
 ### Added

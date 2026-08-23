@@ -1,9 +1,17 @@
 import unittest
+from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
-from ui import add_url, ensure_runtime_files, stop_url, validate_url
+from ui import (
+    add_url,
+    ensure_console_streams,
+    ensure_runtime_files,
+    prepare_recorder_runtime,
+    stop_url,
+    validate_url,
+)
 
 
 class ValidateUrlTests(unittest.TestCase):
@@ -68,6 +76,24 @@ class ValidateUrlTests(unittest.TestCase):
                 runtime_config.write_text("user-secret", encoding="utf-8")
                 ensure_runtime_files()
                 self.assertEqual(runtime_config.read_text(encoding="utf-8"), "user-secret")
+
+    def test_console_streams_are_reconfigured_to_utf8(self):
+        stdout = TextIOWrapper(BytesIO(), encoding="cp1252")
+        stderr = TextIOWrapper(BytesIO(), encoding="cp1252")
+        with patch("ui.sys.stdout", stdout), patch("ui.sys.stderr", stderr):
+            ensure_console_streams("unused.log")
+            self.assertEqual(stdout.encoding.lower().replace("-", ""), "utf8")
+            self.assertEqual(stderr.encoding.lower().replace("-", ""), "utf8")
+            print("支持平台")
+
+    def test_recorder_runtime_prepares_config_and_utf8_streams(self):
+        with (
+            patch("ui.ensure_runtime_files") as ensure_files,
+            patch("ui.ensure_console_streams") as ensure_streams,
+        ):
+            prepare_recorder_runtime()
+        ensure_files.assert_called_once_with()
+        ensure_streams.assert_called_once_with("recorder-console.log")
 
 
 if __name__ == "__main__":

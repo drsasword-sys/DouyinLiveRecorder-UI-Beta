@@ -36,7 +36,7 @@ except ValueError:
     PORT = 8765
 if not 1024 <= PORT <= 65535:
     PORT = 8765
-APP_VERSION = "0.1.0-beta.1"
+APP_VERSION = "0.1.0-beta.2"
 ALLOWED_HOSTS = {
     "live.douyin.com",
     "v.douyin.com",
@@ -65,13 +65,28 @@ def ensure_runtime_files() -> None:
 
 def ensure_console_streams(log_name: str) -> None:
     """Provide log sinks when running as a windowed PyInstaller executable."""
-    if sys.stdout is not None and sys.stderr is not None:
+    invalid_streams = []
+    for stream_name in ("stdout", "stderr"):
+        stream = getattr(sys, stream_name)
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, OSError, ValueError):
+            invalid_streams.append(stream_name)
+
+    if not invalid_streams:
         return
+
     console_log_path = APP_DIR / "logs" / log_name
     console_log_path.parent.mkdir(parents=True, exist_ok=True)
     console_log = console_log_path.open("a", encoding="utf-8", errors="replace")
-    sys.stdout = console_log
-    sys.stderr = console_log
+    for stream_name in invalid_streams:
+        setattr(sys, stream_name, console_log)
+
+
+def prepare_recorder_runtime() -> None:
+    """Prepare writable config and UTF-8 output before importing the recorder."""
+    ensure_runtime_files()
+    ensure_console_streams("recorder-console.log")
 
 
 def validate_url(value: str) -> str:
@@ -335,7 +350,7 @@ if __name__ == "__main__":
     if "--self-test" in sys.argv:
         raise SystemExit(0 if run_self_test() else 1)
     elif "--recorder" in sys.argv:
-        ensure_console_streams("recorder-console.log")
+        prepare_recorder_runtime()
         import main  # noqa: F401 - importing starts the upstream recorder loop
     else:
         ensure_runtime_files()

@@ -1,18 +1,24 @@
 param(
-    [string]$Version = "0.1.0-beta.1"
+    [string]$Version = "0.1.0-beta.2"
 )
 
 $ErrorActionPreference = "Stop"
 $ProjectDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Python = Join-Path $ProjectDir ".venv\Scripts\python.exe"
-$OutputDir = Join-Path $ProjectDir "dist\DouyinLiveRecorderBeta"
+$DistRoot = Join-Path $ProjectDir "dist\$Version"
+$BuildRoot = Join-Path $ProjectDir "build\$Version"
+$OutputDir = Join-Path $DistRoot "DouyinLiveRecorderBeta"
 $ReleaseDir = Join-Path $ProjectDir "release"
 
 if (-not (Test-Path -LiteralPath $Python)) {
     throw "Missing build environment: $Python"
 }
 
-& $Python -m PyInstaller --noconfirm --clean (Join-Path $ProjectDir "DouyinLiveRecorderBeta.spec")
+& $Python -m PyInstaller --noconfirm --clean --distpath $DistRoot --workpath $BuildRoot `
+    (Join-Path $ProjectDir "DouyinLiveRecorderBeta.spec")
+if ($LASTEXITCODE -ne 0) {
+    throw "PyInstaller failed with exit code $LASTEXITCODE"
+}
 
 $Ffmpeg = Get-Command ffmpeg -ErrorAction Stop
 $Ffprobe = Get-Command ffprobe -ErrorAction Stop
@@ -41,6 +47,9 @@ $SelfTestReport = Get-Content -Raw -LiteralPath (Join-Path $OutputDir "logs\self
 if (-not $SelfTestReport.passed) {
     throw "Packaged self-test report did not pass"
 }
+if ($SelfTestReport.version -ne $Version) {
+    throw "Packaged version $($SelfTestReport.version) does not match requested version $Version"
+}
 Copy-Item -LiteralPath (Join-Path $OutputDir "logs\self-test.json") `
     -Destination (Join-Path $ReleaseDir "DouyinLiveRecorderBeta-$Version-self-test.json") -Force
 Write-Host "Packaged self-test passed"
@@ -53,7 +62,25 @@ $ZipPath = Join-Path $ReleaseDir "DouyinLiveRecorderBeta-$Version-win-x64.zip"
 if (Test-Path -LiteralPath $ZipPath) {
     Remove-Item -LiteralPath $ZipPath -Force
 }
-Compress-Archive -Path (Join-Path $OutputDir "*") -DestinationPath $ZipPath -CompressionLevel Optimal
+$Compressed = $false
+for ($Attempt = 1; $Attempt -le 3; $Attempt++) {
+    try {
+        if (Test-Path -LiteralPath $ZipPath) {
+            Remove-Item -LiteralPath $ZipPath -Force
+        }
+        Compress-Archive -Path (Join-Path $OutputDir "*") -DestinationPath $ZipPath -CompressionLevel Optimal
+        $Compressed = $true
+        break
+    } catch {
+        if ($Attempt -eq 3) {
+            throw
+        }
+        Start-Sleep -Seconds 2
+    }
+}
+if (-not $Compressed) {
+    throw "Release archive was not created"
+}
 $FileHash = Get-FileHash -Algorithm SHA256 -LiteralPath $ZipPath
 $ChecksumPath = Join-Path $ReleaseDir "SHA256SUMS.txt"
 "$($FileHash.Hash)  $([IO.Path]::GetFileName($ZipPath))" | Set-Content -LiteralPath $ChecksumPath -Encoding ascii
